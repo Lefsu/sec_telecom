@@ -1,0 +1,47 @@
+sudo apt update
+sudo apt install nginx fail2ban
+sudo mkdir -p /var/www/my_website
+sudo nano /var/www/my_website/index.html
+sudo nano /etc/nginx/sites-available/my_website
+```
+server {
+    listen 65000;  
+    server_name _;  
+    root /var/www/my_website;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+sudo ln -s /etc/nginx/sites-available/my_website /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+sudo nano /etc/fail2ban/jail.d/nginx.conf
+```
+[nginx-http-auth]
+enabled  = true
+port     = 65000  
+filter   = nginx-http-auth
+logpath  = /var/log/nginx/error.log
+maxretry = 4
+bantime  = 600
+
+```
+sudo systemctl restart fail2ban
+
+sudo apt update
+sudo apt install ufw
+sudo ufw disable
+sudo ufw reset
+sudo ufw allow 65000
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw enable
+sudo ufw status verbose
+
+
+##
+sudo fail2ban-client status nginx-http-auth
